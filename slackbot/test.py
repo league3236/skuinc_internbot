@@ -4,15 +4,15 @@ from slackclient import SlackClient
 
 
 # starterbot's ID as an environment variable
-BOT_ID = os.environ.get("U67K0LK62")
+BOT_ID = "U67K0LK62"
 
 # constants
-AT_BOT = "<@" + BOT_ID + ">"
+AT_BOT = "<@" + str(BOT_ID) + ">"
 EXAMPLE_COMMAND = "do"
 
 # instantiate Slack & Twilio clients
-slack_client = SlackClient(os.environ.get('xoxb-211646699206-40DOcO3IDmcYakSzcBQ8vGyb'))
-
+#slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
+slack_client = SlackClient("xoxb-211646699206-K7ZddjJzWfH20eRifXZUdDCQ")
 
 def handle_command(command, channel):
     """
@@ -55,5 +55,3 @@ if __name__ == "__main__":
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
-
-

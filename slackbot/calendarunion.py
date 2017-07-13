@@ -16,10 +16,10 @@ from slacker import Slacker
 import datetime
 #library???
 
-slack = Slacker(os.environ.get("SLACK_BOT_TOKEN"))
+slack = Slacker(os.environ.get('SLACK_BOT_TOKEN'))
 
-def post_to_channel(message):
-    slack.chat.post_message('testtest',message,as_user=True)
+def post_to_channel(message, channel):
+    slack.chat.post_message(channel, message, as_user=True)
 
 try:
     import argparse
@@ -37,10 +37,8 @@ EMAIL = 'league3236@skuniv.ac.kr','subeen2150@skuniv.ac.kr','shs4161@skuniv.ac.k
 
 def get_credentials():
     """Gets valid user credentials from storage.
-
     If nothing has been stored, or if the stored credentials are invalid,
     the OAuth2 flow is completed to obtain the new credentials.
-
     Returns:
         Credentials, the obtained credential.
     """
@@ -63,9 +61,8 @@ def get_credentials():
         answer='Storing credentials to ' + credential_path
     return credentials
 
-def get_AllList():
+def get_AllList(channel):
     """Shows basic usage of the Google Calendar API.
-
         Creates a Google Calendar API service object and outputs a list of the next
         10 events on the user's calendar.
         """
@@ -81,19 +78,21 @@ def get_AllList():
     events = eventsResult.get('items', [])
 
     #now1 = datetime.datetime.now()
-    answer='All event dateTime and eventName:'
+    answer='일정이 빡빡하네 :)'
+    post_to_channel(answer, channel)
     #nowDate = now.strftime('%Y-%m-%d')
     #print(nowDate)  # 2015-04-19
 
     if not events:
-        answer='No upcoming events found.'
+        answer='거짓말이야...'
+        post_to_channel(answer, channel)
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        answer='DAY:'+start.split('+')[0].split('T')[0],'Time:'+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1],'Summary:'+event['summary']
-    return 0
-def get_TodayList():
+        answer='*•'+start.split('+')[0].split('T')[0]+'날 '+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+'에'+event['summary']+"이(가) 잡혀있어"
+        post_to_channel(answer, channel)
+    return None
+def get_TodayList(channel):
     """Shows basic usage of the Google Calendar API.
-
         Creates a Google Calendar API service object and outputs a list of the next
         10 events on the user's calendar.
         """
@@ -110,24 +109,23 @@ def get_TodayList():
 
     now=datetime.datetime.now()
     nowDate = now.strftime('%Y-%m-%d')
-    answer='Today event dateTime and eventName:'
-    post_to_channel(answer)
+    answer='오늘 예정된 일정이야:)'
+    post_to_channel(answer,channel)
     if not events:
-        answer ='No upcoming events found.'
-        post_to_channel(answer)
+        answer ='일정을 추가해 볼래??'
+        post_to_channel(answer,channel)
     for event in events:
         start = event['start'].get('dateTime')
         end = event['end'].get('dateTime')
         today = start.split('T')[0]
         if today == nowDate:
-            answer ="Time:"+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+"~"+end.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1],"summary:"+event['summary']
-            post_to_channel(answer)
+            answer ="*•"+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+"에서"+end.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+"동안 "+event['summary']+"이(가) 잡혀있어"
+            post_to_channel(answer,channel)
             #print(event['id'])
-    return 0
+    return None
 
-def get_TomorrowList():
+def get_TomorrowList(channel):
     """Shows basic usage of the Google Calendar API.
-
             Creates a Google Calendar API service object and outputs a list of the next
             10 events on the user's calendar.
             """
@@ -145,21 +143,21 @@ def get_TomorrowList():
     now = datetime.datetime.now()
     tomorrowDate = str(now + datetime.timedelta(days=1)).split(' ')[0]
 
-    answer='Tomorrow event dateTime and eventName:'
-    post_to_channel(answer)
+    answer='내일 하루 일정이야:)'
+    post_to_channel(answer,channel)
     if not events:
-        answer='No upcoming events found.'
-        post_to_channel(answer)
+        answer='내일 일정이 비었어!!'
+        post_to_channel(answer,channel)
     for event in events:
         start = event['start'].get('dateTime')
         end = event['end'].get('dateTime')
         tomorrow = start.split('T')[0]
 
         if tomorrow == tomorrowDate:
-            answer = "Time:" + start.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1] + "~"+end.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1],"summary:" + event['summary']
-            post_to_channel(answer)
+            answer = "*•" + start.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1] + "에서"+end.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1]+"에" + event['summary']+"이(가) 잡혀있어"
+            post_to_channel(answer,channel)
             # print(event['id'])
-    return 0
+    return None
 
 def insert_Event(EventName,StartTime,EndTime):
     store = file.Storage('storage.json')
@@ -244,11 +242,11 @@ def get_EventID(D_Day,E_Summary):
 def main():
     print('실행되는중')
     #command("event all")
-    get_AllList()
+    #get_AllList()
     #command("event today")
-    get_TodayList()
+    #get_TodayList()
     #command("Tomorrow")
-    get_TomorrowList()
+    #get_TomorrowList()
 
     #insert
     #command("insert 15 13:00-14:00 summary")

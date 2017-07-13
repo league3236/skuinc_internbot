@@ -1,0 +1,30 @@
+{
+  "token":"xoxp-204037003492-203439567585-212084676339-75cd60e4fda9a020906a1fc648ab6d4a",
+  "channels": [
+    {
+      "name": "general",
+      "incoming_webhook_url": "https://hooks.slack.com/services/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",
+      "icon_emoji": ":shipit:"
+    },
+    {
+      "name": "random",
+      "incoming_webhook_url": "https://hooks.slack.com/services/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",
+      "icon_emoji": ":mouse:"
+    },
+    {
+      "name": "team1",
+      "incoming_webhook_url": "https://hooks.slack.com/services/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",
+      "icon_emoji": ":dog:"
+    },
+    {
+      "name": "testtest",
+      "incoming_webhook_url": "https://hooks.slack.com/services/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",
+      "icon_emoji": ":cat:"
+    },
+    {
+      "name": "_imo_do8_deploy_",
+      "incoming_webhook_url": "https://hooks.slack.com/services/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",
+      "icon_emoji": ":cow:"
+    }
+  ]
+}

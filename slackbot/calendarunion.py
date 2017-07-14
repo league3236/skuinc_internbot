@@ -78,8 +78,7 @@ def get_AllList(channel):
     events = eventsResult.get('items', [])
 
     #now1 = datetime.datetime.now()
-    answer='모든 일정이야'
-    post_to_channel(answer, channel)
+    answer=u'날짜                 시간       제목\n'
     #nowDate = now.strftime('%Y-%m-%d')
     #print(nowDate)  # 2015-04-19
 
@@ -88,8 +87,17 @@ def get_AllList(channel):
         post_to_channel(answer, channel)
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        answer=u'날짜:'+start.split('+')[0].split('T')[0]+u' 시간:'+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+u' 제목:'+event['summary']
-        post_to_channel(answer, channel)
+        answer=answer+start.split('+')[0].split('T')[0]+u'    '+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+u'    '+event['summary']+u"\n"
+        attachments = [
+            {
+                "text": answer,
+                "fallback": "You are unable to choose a game",
+                "callback_id": "wopr_game",
+                "color": "#3AA3E3",
+                "attachment_type": "default",
+            }
+        ]
+    slack.chat.post_message(channel, attachments=attachments, as_user=True)
     return None
 def get_TodayList(channel):
     """Shows basic usage of the Google Calendar API.
@@ -109,8 +117,9 @@ def get_TodayList(channel):
 
     now=datetime.datetime.now()
     nowDate = now.strftime('%Y-%m-%d')
-    answer='오늘 예정된 일정이야'
+    answer =u"오늘 일정이야\n"
     post_to_channel(answer,channel)
+    answer=u'시간                   제목\n'
     if not events:
         answer ='오늘 일정이 비었어^__^'
         post_to_channel(answer,channel)
@@ -119,8 +128,18 @@ def get_TodayList(channel):
         end = event['end'].get('dateTime')
         today = start.split('T')[0]
         if today == nowDate:
-            answer =u"시간:"+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+"~"+end.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+u" 제목:"+event['summary']
-            post_to_channel(answer,channel)
+            answer = answer + start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+"~"+end.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+u"    "+event['summary']+u"\n"
+            attachments = [
+                {
+                    "text": answer,
+                    "fallback": "You are unable to choose a game",
+                    "callback_id": "wopr_game",
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                }
+            ]
+    slack.chat.post_message(channel, attachments=attachments, as_user=True)
+            #post_to_channel(answer,channel)
             #print(event['id'])
     return None
 
@@ -143,8 +162,9 @@ def get_TomorrowList(channel):
     now = datetime.datetime.now()
     tomorrowDate = str(now + datetime.timedelta(days=1)).split(' ')[0]
 
-    answer='내일 예정된 일정이야'
-    post_to_channel(answer,channel)
+    answer = u"내일 일정이야\n"
+    post_to_channel(answer, channel)
+    answer = u'시간                   제목\n'
     if not events:
         answer='내일 일정이 비었어^__^'
         post_to_channel(answer,channel)
@@ -154,9 +174,19 @@ def get_TomorrowList(channel):
         tomorrow = start.split('T')[0]
 
         if tomorrow == tomorrowDate:
-            answer = u"시간:" + start.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1] + "~"+end.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1]+u" 제목:" + event['summary']
-            post_to_channel(answer,channel)
-            # print(event['id'])
+            answer = answer + start.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1] + "~" + \
+                     end.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1] + u"    " + event[
+                         'summary'] + u"\n"
+            attachments = [
+                {
+                    "text": answer,
+                    "fallback": "You are unable to choose a game",
+                    "callback_id": "wopr_game",
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                }
+            ]
+    slack.chat.post_message(channel, attachments=attachments, as_user=True)
     return None
 
 def insert_Event(EventName,StartTime,EndTime,channel):
@@ -185,9 +215,9 @@ def insert_Event(EventName,StartTime,EndTime,channel):
 
     e = GCAL.events().insert(calendarId=CA_NAME, sendNotifications=True, body=EVENT).execute()
 
-    answer=u'''*** [%s] 일정을 추가중입니다 ***
-           *•시작시간:   %s
-           *•끝나는시간: %s''' % (e['summary'].encode('utf-8'),
+    answer=u'''*** *[%s]* 일정을 추가중입니다 ---
+           •시작시간:   %s
+           •끝나는시간: %s''' % (e['summary'],
                            e['start']['dateTime'].split('T')[0] + " " + e['start']['dateTime'].split('+')[0].split('T')[1].split(':')[0]+(':')+e['start']['dateTime'].split(':')[1],
                            e['end']['dateTime'].split('T')[0] + " " + e['end']['dateTime'].split('+')[0].split('T')[1].split(':')[0]+(':')+e['start']['dateTime'].split(':')[1])
     post_to_channel(answer, channel)

@@ -10,10 +10,6 @@ from slackclient import SlackClient
 from slacker import Slacker
 import re
 
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
 
 # starterbot's ID as an environment variable
 BOT_ID = os.environ.get("BOT_ID")
@@ -71,7 +67,7 @@ def slack_answer(txt, channel):
     if txt == EXAMPLE_COMMAND1:
         answer = "안녕? 나는 일정봇이야. 명령어를 입력해죠"
     elif txt.find(LIST_ALL) != -1:
-        answer = "검색이 모두 완료되었어"
+        answer = "검색이 모두 완료되었어:smile:"
         calendarunion.get_AllList(channel)
     elif txt.find(LIST_TOMORROW) != -1:
         answer = "미리 준비하자>__<"
@@ -80,7 +76,7 @@ def slack_answer(txt, channel):
         answer = "오늘 하루도 힘내^__^"
         calendarunion.get_TodayList(channel)
     elif txt.find(INSERT_EVENT) != -1:
-        answer = "★일정 추가 완료★"
+        answer = "*★*일정 추가 완료*★*:smile:"
         cmd = re.compile(r"((^\D+)\s+(\d+)\s+((\d+):(\d+))(-|~)((\d+):(\d+))\s+(\D+))")
         matchobj = cmd.search(txt)
         E_Day=matchobj.group(3)
@@ -91,7 +87,7 @@ def slack_answer(txt, channel):
         e_dateTime = calendarunion.convert(E_Day,e_Time)
         calendarunion.insert_Event(event_Name,s_dateTime,e_dateTime,channel)
     elif txt.find(DELETE_EVENT) != -1:
-        answer = "☆일정 제거 완료☆"
+        answer = "*☆*일정 제거 완료*☆*:smile:"
         cmd = re.compile(r"((^\D+)\s+(\d+)\s+(\D+))")
         matchobj = cmd.search(txt)
         D_Day=matchobj.group(3)

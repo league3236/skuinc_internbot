@@ -8,6 +8,11 @@ import json
 import urllib2
 from slackclient import SlackClient
 from slacker import Slacker
+import re
+
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 
 # starterbot's ID as an environment variable
@@ -15,10 +20,13 @@ BOT_ID = os.environ.get("BOT_ID")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
-EXAMPLE_COMMAND = "do"
-EXAMPLE_COMMAND1 = "hi"
-EXAMPLE_COMMAND2 = "tomorrow"
-EXAMPLE_COMMAND3 = "today"
+EXAMPLE_COMMAND = u"명령어"
+EXAMPLE_COMMAND1 = u"안녕"
+LIST_ALL = u"일정-모두"
+LIST_TOMORROW = u"일정-내일"
+LIST_TODAY = u"일정-오늘"
+INSERT_EVENT = u"일정추가"
+DELETE_EVENT = u"일정삭제"
 BL = True;
 
 # instantiate Slack & Twilio clients
@@ -61,13 +69,35 @@ def calendar_report():
 
 def slack_answer(txt, channel):
     if txt == EXAMPLE_COMMAND1:
-        answer = "안녕하세요! 일정봇입니다."
-    elif txt.find(EXAMPLE_COMMAND2) != -1:
-        answer = "내일을 위해 빠샤빠샤!!"
+        answer = "안녕? 나는 일정봇이야. 명령어를 입력해죠"
+    elif txt.find(LIST_ALL) != -1:
+        answer = "검색이 모두 완료되었어"
+        calendarunion.get_AllList(channel)
+    elif txt.find(LIST_TOMORROW) != -1:
+        answer = "미리 준비하자>__<"
         calendarunion.get_TomorrowList(channel)
-    elif txt.find(EXAMPLE_COMMAND3) != -1:
-        answer = "오늘 하루도 화잇팅!!"
+    elif txt.find(LIST_TODAY) != -1:
+        answer = "오늘 하루도 힘내^__^"
         calendarunion.get_TodayList(channel)
+    elif txt.find(INSERT_EVENT) != -1:
+        answer = "★일정 추가 완료★"
+        cmd = re.compile(r"((^\D+)\s+(\d+)\s+((\d+):(\d+))(-|~)((\d+):(\d+))\s+(\D+))")
+        matchobj = cmd.search(txt)
+        E_Day=matchobj.group(3)
+        s_Time=matchobj.group(4)
+        e_Time=matchobj.group(8)
+        event_Name = matchobj.group(11)
+        s_dateTime = calendarunion.convert(E_Day,s_Time)
+        e_dateTime = calendarunion.convert(E_Day,e_Time)
+        calendarunion.insert_Event(event_Name,s_dateTime,e_dateTime,channel)
+    elif txt.find(DELETE_EVENT) != -1:
+        answer = "☆일정 제거 완료☆"
+        cmd = re.compile(r"((^\D+)\s+(\d+)\s+(\D+))")
+        matchobj = cmd.search(txt)
+        D_Day=matchobj.group(3)
+        E_Summary=matchobj.group(4)
+        Event_Id=calendarunion.get_EventID(D_Day,E_Summary)
+        calendarunion.delete_Event(Event_Id,channel)
 	#payload = {"text": "내일일정 알림!!!"}
 	#url = "https://hooks.slack.com/services/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"
 	#req = urllib2.Request(url)

@@ -78,17 +78,17 @@ def get_AllList(channel):
     events = eventsResult.get('items', [])
 
     #now1 = datetime.datetime.now()
-    answer='일정이 빡빡하네 :)'
+    answer='모든 일정이야'
     post_to_channel(answer, channel)
     #nowDate = now.strftime('%Y-%m-%d')
     #print(nowDate)  # 2015-04-19
 
     if not events:
-        answer='거짓말이야...'
+        answer='모든 일정이 비었어^__^'
         post_to_channel(answer, channel)
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        answer='*•'+start.split('+')[0].split('T')[0]+'날 '+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+'에'+event['summary']+"이(가) 잡혀있어"
+        answer=u'날짜:'+start.split('+')[0].split('T')[0]+u' 시간:'+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+u' 제목:'+event['summary']
         post_to_channel(answer, channel)
     return None
 def get_TodayList(channel):
@@ -109,17 +109,17 @@ def get_TodayList(channel):
 
     now=datetime.datetime.now()
     nowDate = now.strftime('%Y-%m-%d')
-    answer='오늘 예정된 일정이야:)'
+    answer='오늘 예정된 일정이야'
     post_to_channel(answer,channel)
     if not events:
-        answer ='일정을 추가해 볼래??'
+        answer ='오늘 일정이 비었어^__^'
         post_to_channel(answer,channel)
     for event in events:
         start = event['start'].get('dateTime')
         end = event['end'].get('dateTime')
         today = start.split('T')[0]
         if today == nowDate:
-            answer ="*•"+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+"에서"+end.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+"동안 "+event['summary']+"이(가) 잡혀있어"
+            answer =u"시간:"+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+"~"+end.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+u" 제목:"+event['summary']
             post_to_channel(answer,channel)
             #print(event['id'])
     return None
@@ -143,10 +143,10 @@ def get_TomorrowList(channel):
     now = datetime.datetime.now()
     tomorrowDate = str(now + datetime.timedelta(days=1)).split(' ')[0]
 
-    answer='내일 하루 일정이야:)'
+    answer='내일 예정된 일정이야'
     post_to_channel(answer,channel)
     if not events:
-        answer='내일 일정이 비었어!!'
+        answer='내일 일정이 비었어^__^'
         post_to_channel(answer,channel)
     for event in events:
         start = event['start'].get('dateTime')
@@ -154,12 +154,12 @@ def get_TomorrowList(channel):
         tomorrow = start.split('T')[0]
 
         if tomorrow == tomorrowDate:
-            answer = "*•" + start.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1] + "에서"+end.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1]+"에" + event['summary']+"이(가) 잡혀있어"
+            answer = u"시간:" + start.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1] + "~"+end.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1]+u" 제목:" + event['summary']
             post_to_channel(answer,channel)
             # print(event['id'])
     return None
 
-def insert_Event(EventName,StartTime,EndTime):
+def insert_Event(EventName,StartTime,EndTime,channel):
     store = file.Storage('storage.json')
     creds = store.get()
     if not creds or creds.invalid:
@@ -185,11 +185,12 @@ def insert_Event(EventName,StartTime,EndTime):
 
     e = GCAL.events().insert(calendarId=CA_NAME, sendNotifications=True, body=EVENT).execute()
 
-    answer='''*** %r event added:
-           Start: %s
-           End:   %s''' % (e['summary'].encode('utf-8'),
+    answer=u'''*** [%s] 일정을 추가중입니다 ***
+           *•시작시간:   %s
+           *•끝나는시간: %s''' % (e['summary'].encode('utf-8'),
                            e['start']['dateTime'].split('T')[0] + " " + e['start']['dateTime'].split('+')[0].split('T')[1].split(':')[0]+(':')+e['start']['dateTime'].split(':')[1],
                            e['end']['dateTime'].split('T')[0] + " " + e['end']['dateTime'].split('+')[0].split('T')[1].split(':')[0]+(':')+e['start']['dateTime'].split(':')[1])
+    post_to_channel(answer, channel)
 
     return 0
 #print('DAY:'+start.split('+')[0].split('T')[0],'Time:'+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1],'Summary:'+event['summary'])
@@ -200,7 +201,7 @@ def convert(date,time):
 
     return result
 
-def delete_Event(Event_Id):
+def delete_Event(Event_Id,channel):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
@@ -212,7 +213,8 @@ def delete_Event(Event_Id):
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
 
-    answer='Events Delete:'
+    answer=u'***일정 제거중***'
+    post_to_channel(answer, channel)
     service.events().delete(calendarId=CA_NAME, eventId=Event_Id).execute()
 
     return 0
@@ -242,7 +244,7 @@ def get_EventID(D_Day,E_Summary):
 def main():
     print('실행되는중')
     #command("event all")
-    #get_AllList()
+    #get_AllList(channel)
     #command("event today")
     #get_TodayList()
     #command("Tomorrow")
@@ -259,12 +261,12 @@ def main():
     #event_Name = 'test'
     #s_dateTime = convert(E_Day,s_Time)
     #e_dateTime = convert(E_Day,e_Time)
-    #insert_Event(event_Name,s_dateTime,e_dateTime)
+    #insert_Event(event_Name,s_dateTime,e_dateTime,channel)
 
 
     #combine start delete
 
-    #command(ex:delete 12 melong) (day"(\d[+2])")(summary"((\D)+\s*(\d+)\s+(\D+)\s*)"3GROUP USE)
+    #command(ex:delete 12 melong) (day"(\d[+2])")(summary"(^\D+)\s+(\d+2)\s+(\D+)"3GROUP USE)
 
     #D_Day='12'
     #E_Summary='melong'

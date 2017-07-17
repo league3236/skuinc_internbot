@@ -83,8 +83,16 @@ def get_AllList(channel):
     #print(nowDate)  # 2015-04-19
 
     if not events:
-        answer='모든 일정이 비었어^__^'
-        post_to_channel(answer, channel)
+        answer = u'모든 일정이 비었어:( \n일정추가 명령어로 일정을 등록해보는건 어때?'
+        attachments = [
+            {
+                "text": answer,
+                "fallback": "ALL daily",
+                "callback_id": "ALL_daily",
+                "color": "#f44182",
+                "attachment_type": "default",
+            }
+        ]
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         answer=answer+start.split('+')[0].split('T')[0]+u'    '+start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+u'    '+event['summary']+u"\n"
@@ -93,7 +101,7 @@ def get_AllList(channel):
                 "text": answer,
                 "fallback": "You are unable to choose a game",
                 "callback_id": "wopr_game",
-                "color": "#3AA3E3",
+                "color": "#f4eb41",
                 "attachment_type": "default",
             }
         ]
@@ -121,23 +129,24 @@ def get_TodayList(channel):
     post_to_channel(answer,channel)
     answer=u'시간                   제목\n'
     if not events:
-        answer ='오늘 일정이 비었어^__^'
-        post_to_channel(answer,channel)
+        answer = u'오늘 일정이 비었어:( \n일정추가 명령어로 일정을 등록해보는건 어때?'
+        post_to_channel(answer, channel)
+        return None
     for event in events:
         start = event['start'].get('dateTime')
         end = event['end'].get('dateTime')
         today = start.split('T')[0]
         if today == nowDate:
             answer = answer + start.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+"~"+end.split('+')[0].split('T')[1].split(':')[0]+(':')+start.split(':')[1]+u"    "+event['summary']+u"\n"
-            attachments = [
-                {
-                    "text": answer,
-                    "fallback": "You are unable to choose a game",
-                    "callback_id": "wopr_game",
-                    "color": "#3AA3E3",
-                    "attachment_type": "default",
-                }
-            ]
+        attachments = [
+            {
+                "text": answer,
+                "fallback": "Today daily",
+                "callback_id": "Today_daily",
+                "color": "#3AA3E3",
+                "attachment_type": "default",
+            }
+        ]
     slack.chat.post_message(channel, attachments=attachments, as_user=True)
             #post_to_channel(answer,channel)
             #print(event['id'])
@@ -166,26 +175,26 @@ def get_TomorrowList(channel):
     post_to_channel(answer, channel)
     answer = u'시간                   제목\n'
     if not events:
-        answer='내일 일정이 비었어^__^'
-        post_to_channel(answer,channel)
+        answer = u'내일 일정이 비었어:( \n일정추가 명령어로 일정을 등록해보는건 어때?'
+        post_to_channel(answer, channel)
+        return None
     for event in events:
         start = event['start'].get('dateTime')
         end = event['end'].get('dateTime')
         tomorrow = start.split('T')[0]
-
         if tomorrow == tomorrowDate:
             answer = answer + start.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1] + "~" + \
                      end.split('+')[0].split('T')[1].split(':')[0] + (':') + start.split(':')[1] + u"    " + event[
                          'summary'] + u"\n"
-            attachments = [
-                {
-                    "text": answer,
-                    "fallback": "You are unable to choose a game",
-                    "callback_id": "wopr_game",
-                    "color": "#3AA3E3",
-                    "attachment_type": "default",
-                }
-            ]
+        attachments = [
+            {
+                "text": answer,
+                "fallback": "Tomorrow_List",
+                "callback_id": "Tomorrow_List",
+                "color": "#9541f4",
+                "attachment_type": "default",
+            }
+        ]
     slack.chat.post_message(channel, attachments=attachments, as_user=True)
     return None
 
@@ -249,7 +258,7 @@ def delete_Event(Event_Id,channel):
 
     return 0
 
-def get_EventID(D_Day,E_Summary):
+def get_EventID(D_Day,E_Summary,channel):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
@@ -269,7 +278,22 @@ def get_EventID(D_Day,E_Summary):
         today = start.split('T')[0]
         if ((today == WhatDate) and (event['summary']==E_Summary)):
             event_id = event['id']
-    return event_id
+            return event_id
+    return 'error'
+
+def help_command(channel):
+    answer = "*도움말*:smile:\n*명령어*\n\t일정-도와줘\t일정봇의 명령어들을 볼 수 있습니다.\n\t일정-모두\t모든 일정을 확인할 수 있습니다.\n\t일정-오늘\t오늘 일정을 확인할 수 있습니다.\n\t일정-내일\t내일 일정을 확인할 수 있습니다.\n\t일정-추가\t일정을 추가할 수 있습니다.\n\t\t[일정-추가 (-D|-d) 날짜 (-T|-t) 시작:시간~끝나는:시간 (-S:-s)일정제목]\n\t\t일정-추가 -d 18 -t 12:00~13:00 -S 점심시간\n\t일정-삭제\t\t일정을 삭제 할 수 있습니다.\n\t\t[일정-삭제 (-D|-d) 날짜 (-S:-s)일정제목]\n\t\t일정-삭제 -d 18 -S 점심시간"
+    attachments = [
+        {
+            "text": answer,
+            "fallback": "Help_Command",
+            "callback_id": "Help_Command",
+            "color": "#42f459",
+            "attachment_type": "default",
+        }
+    ]
+    slack.chat.post_message(channel, attachments=attachments, as_user=True)
+    return None
 
 def main():
     print('실행되는중')
